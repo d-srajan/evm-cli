@@ -1,0 +1,29 @@
+{
+  "name": "evm-cli",
+  "version": "1.0.0",
+  "description": "A simple CLI to manage OS-level environment variables across shells",
+  "type": "module",
+  "bin": {
+    "evm": "./bin/evm.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "env",
+    "environment",
+    "variables",
+    "cli",
+    "shell"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "execa": "^9.6.1",
+    "vitest": "^4.1.0"
+  }
+}
