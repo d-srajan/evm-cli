@@ -51,6 +51,27 @@ export function buildExportLine(key, value, shell = 'zsh') {
   return `export ${key}="${value}"`;
 }
 
+/**
+ * Parse a .env file into an array of { key, value }.
+ * Skips blank lines and comments (#).
+ * Strips surrounding quotes from values.
+ */
+export function parseDotEnvFile(content) {
+  return content
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith('#'))
+    .map(l => parseKeyValue(l))
+    .filter(Boolean);
+}
+
+/**
+ * Serialize an array of { key, value } to .env file format.
+ */
+export function serializeDotEnv(vars) {
+  return vars.map(({ key, value }) => `${key}=${value}`).join('\n') + '\n';
+}
+
 // ─── Formatting ─────────────────────────────────────────
 
 const SENSITIVE_PATTERNS = /SECRET|TOKEN|PASSWORD|API_KEY|PRIVATE|CREDENTIAL/i;

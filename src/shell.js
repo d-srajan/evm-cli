@@ -1,7 +1,10 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { parseExportLine, buildExportLine } from './utils.js';
+import { parseExportLine, buildExportLine, parseDotEnvFile, serializeDotEnv } from './utils.js';
+
+const EVM_DIR = join(homedir(), '.evm');
+const BACKUP_DIR = join(EVM_DIR, 'backups');
 
 const EVM_START = '# >>> evm managed >>>';
 const EVM_END = '# <<< evm managed <<<';
@@ -159,4 +162,46 @@ export function getVar(configPath, shell, key) {
   const vars = readManagedVars(configPath, shell);
   const entry = vars.find(v => v.key === key);
   return entry ? entry.value : null;
+}
+
+// ─── Backup / Restore ───────────────────────────────────
+
+function ensureBackupDir(dir = BACKUP_DIR) {
+  mkdirSync(dir, { recursive: true });
+}
+
+/**
+ * Write a backup of evm-managed vars to ~/.evm/backups/<timestamp>.env
+ * Returns the path of the created backup.
+ */
+export function writeBackup(vars, backupDir = BACKUP_DIR) {
+  ensureBackupDir(backupDir);
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 23);
+  const filePath = join(backupDir, `${ts}.env`);
+  writeFileSync(filePath, serializeDotEnv(vars));
+  return filePath;
+}
+
+/**
+ * List all backup files sorted newest-first.
+ * Returns array of { name, path, date }.
+ */
+export function listBackups(backupDir = BACKUP_DIR) {
+  if (!existsSync(backupDir)) return [];
+  return readdirSync(backupDir)
+    .filter(f => f.endsWith('.env'))
+    .sort()
+    .reverse()
+    .map(f => ({
+      name: f.replace('.env', ''),
+      path: join(backupDir, f),
+    }));
+}
+
+/**
+ * Read a backup file and return { key, value }[].
+ */
+export function readBackupFile(filePath) {
+  if (!existsSync(filePath)) return null;
+  return parseDotEnvFile(readFileSync(filePath, 'utf-8'));
 }
