@@ -7,7 +7,7 @@ Supports **zsh**, **bash**, and **fish**. Variables are persisted in a managed b
 ## Install
 
 ```bash
-npm install -g evm-cli
+npm install -g github:d-srajan/evm-cli
 ```
 
 Or run locally:
